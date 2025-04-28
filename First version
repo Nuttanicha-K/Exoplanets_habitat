@@ -1,0 +1,116 @@
+import pandas as pd
+import numpy as np
+import matplotlib.pyplot as plt
+from sklearn.preprocessing import StandardScaler
+from sklearn.cluster import KMeans
+from sklearn.decomposition import PCA
+
+
+#for this first version my features are planet radius, planet mass, stellar mass effective tempurature and distance.
+#the features i have selected are earth's reference units (Planet radius and planet mass)
+
+df = pd.read_csv('filtered_exoplanets.csv')
+df = df.dropna(subset=['pl_rade', 'pl_bmasse', 'st_teff', 'sy_dist', 'st_mass'])
+
+# Select the features to use for clustering
+features = df[['pl_rade', 'pl_bmasse', 'st_mass', 'sy_dist', 'st_teff']]
+scaler = StandardScaler()
+scaled_features = scaler.fit_transform(features)
+
+#Elbow method
+inertia = []
+for k in range(1, 11):
+    kmeans = KMeans(n_clusters=k, random_state=42)
+    kmeans.fit(scaled_features)
+    inertia.append(kmeans.inertia_)
+
+#Plotting to visualize the elbow
+plt.figure(figsize=(8, 6))
+plt.plot(range(1, 11), inertia, marker='o', linestyle='--')
+plt.title('Elbow Method for Optimal k')
+plt.xlabel('Number of Clusters')
+plt.ylabel('Inertia (Sum of Squared Distances)')
+plt.grid(True)
+plt.show()
+
+#%%
+#after reviewing elbow plot, i assume the most acceptable k is 6.
+
+k = 6
+kmeans = KMeans(n_clusters=k, random_state=42)
+df['cluster'] = kmeans.fit_predict(scaled_features)
+
+
+pca = PCA(n_components=2)
+pca_features = pca.fit_transform(scaled_features)g
+df['PCA1'] = pca_features[:, 0]
+df['PCA2'] = pca_features[:, 1]
+
+plt.figure(figsize=(10, 6))
+plt.scatter(df['PCA1'], df['PCA2'], c=df['cluster'], cmap='viridis', alpha=0.7)
+plt.title(f'K-Means Clustering of Exoplanets (k={k}, 2D PCA Projection)')
+plt.xlabel('PCA 1')
+plt.ylabel('PCA 2')
+plt.colorbar(label='Cluster')
+plt.show()
+
+
+for i in range(k):
+    print(f"\nCluster {i} Summary:")
+    print(df[df['cluster'] == i].describe())
+
+
+for cluster in df['cluster'].unique():
+    print(f"\nCluster {cluster} Details:")
+    cluster_data = df[df['cluster'] == cluster]
+    print(cluster_data[['pl_name', 'pl_rade', 'pl_bmasse', 'st_mass', 'pl_orbper', 'sy_dist', 'st_teff']])
+    
+cluster_data_list = []
+for cluster in df['cluster'].unique():
+    cluster_data = df[df['cluster'] == cluster][['pl_name', 'pl_rade', 'pl_bmasse', 'st_mass', 'pl_orbper', 'sy_dist', 'st_teff']]
+    cluster_data['cluster'] = cluster
+    cluster_data_list.append(cluster_data)
+
+all_cluster_data = pd.concat(cluster_data_list, ignore_index=True)
+all_cluster_data.to_csv('clustered_exoplanets.csv', index=False)
+
+print("CSV file has been saved successfully")
+
+#%%
+#I tried to Plot distributions of key features for each cluster
+#I did loop for all the feature turns out every features in each cluster aren't different much.
+import seaborn as sns
+plt.figure(figsize=(12, 8))
+sns.boxplot(data=df_clean, x='Cluster', y='pl_bmasse', palette='Set2') 
+plt.title('Distribution of pl_rade by Cluster')
+plt.xlabel('Cluster')
+plt.ylabel('pl_rade (Planet Radius)')
+plt.tight_layout()
+plt.show()
+
+#%%
+#So i Calculate the Spearman correlation between features across all clusters
+#and of cause i already check by done loop the following lines between features and features, turn out the same with previous cell
+
+correlations_by_cluster = {}
+
+for cluster_num in df_clean['Cluster'].unique():
+    cluster_data = df_clustered[df_clustered['Cluster'] == cluster_num]
+    correlation = cluster_data[features].corr(method='spearman')  # Spearman correlation
+    correlations_by_cluster[cluster_num] = correlation['pl_rade']  # Get correlation of 'pl_rade' with other features
+
+    print(f"\nCorrelation of 'pl_rade' with other features in Cluster {cluster_num}:")
+    print(correlations_by_cluster[cluster_num])
+
+plt.figure(figsize=(10, 6))
+for cluster_num in df_clean['Cluster'].unique():
+    plt.plot(features, correlations_by_cluster[cluster_num], label=f'Cluster {cluster_num}')
+
+plt.xlabel('Features')
+plt.ylabel('Spearman Correlation with pl_rade')
+plt.title('Spearman Correlation of pl_rade with Other Features by Cluster')
+plt.legend()
+plt.grid(True)
+plt.xticks(rotation=45)
+plt.tight_layout()
+plt.show()
