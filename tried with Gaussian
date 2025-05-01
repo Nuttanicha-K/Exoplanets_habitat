@@ -65,7 +65,7 @@ for cluster in df['cluster'].unique():
     print(cluster_data[['pl_name', 'pl_rade', 'pl_bmasse', 'st_mass', 'pl_orbper', 'sy_dist', 'st_teff']])
 
 # %%
-#checking which cluster have much more correlation with what used features
+#checking feature distribution heatmaps grouped by cluster.
 #เช็กอยู่ค่อยอัพลง เผื่อตุ๊บ
 features = ['pl_rade', 'pl_bmasse', 'st_mass', 'pl_orbper', 'sy_dist', 'st_teff']
 
