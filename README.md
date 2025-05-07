@@ -24,3 +24,6 @@ After applying GMM, **Earth was found in Cluster 0**, indicating that the planet
 The planet **LP 791-18 d** was identified as the **most similar to Earth**.
 
 📄 For the full unofficial report and clustering dataset, see the Google Docs link in the project description.
+
+*work in progress*
+next thing i'm going to do is considering and analyzed all the clusters i got to achive the goal of the project which is assessing the exoplanets potential habitability.
