@@ -19,6 +19,7 @@ The following features were used to represent each exoplanet:
 4.**pl_orbper** – Orbital Period  
 5.**sy_dist** – System Distance from Earth  
 6.**st_teff** – Stellar Effective Temperature
+
 After applying GMM, **Earth was found in Cluster 0**, indicating that the planets in this cluster exhibit similar physical and orbital characteristics. I then scaled the feature data and ranked the top 10 planets in Cluster 0 based on similarity to Earth.
 
 The planet **LP 791-18 d** was identified as the **most similar to Earth**.
