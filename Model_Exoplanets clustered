@@ -1,1 +1,11 @@
+#%%
+import pandas as pd
+df = pd.read_csv('EXO_PLANET_DATA_FROM_NASA.csv')
+df['releasedate'] = pd.to_datetime(df['releasedate'], format='%m/%d/%y', errors='coerce')
+invalid_dates = df[df['releasedate'].isna()]
+print(invalid_dates)
 
+df_sorted = df.sort_values(by='releasedate')
+df_latest = df_sorted.drop_duplicates(subset='pl_name', keep='last')
+
+df_latest.to_csv('filtered_exoplanets.csv', index=False)
