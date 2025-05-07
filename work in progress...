@@ -1,10 +1,11 @@
 # %%
-#2nd version
+#Final_version
 import pandas as pd
 import matplotlib.pyplot as plt
 from sklearn.preprocessing import StandardScaler
 from sklearn.decomposition import PCA
 from sklearn.mixture import GaussianMixture
+from sklearn.metrics import pairwise_distances
 import numpy as np
 
 df = pd.read_csv('clustered_exoplanets6.csv')
@@ -81,3 +82,25 @@ for feature in features:
     plt.title(f'Cluster vs Feature: {feature}', fontsize=14)
     plt.tight_layout()
     plt.show()
+
+features = ['pl_rade', 'pl_bmasse', 'st_mass', 'sy_dist', 'st_teff']
+
+cluster0 = df[df['cluster'] == 0]
+
+earth_data = pd.DataFrame([{
+    'pl_rade': 1.0,      
+    'pl_bmasse': 1.0,    
+    'st_mass': 1.0,      
+    'sy_dist': 0.0, 
+    'st_teff': 5778, 
+}])
+
+
+earth_scaled = scaler.transform(earth_data[features])
+distances = pairwise_distances(cluster0[features], earth_scaled)
+cluster0 = cluster0.copy()
+cluster0['distance_from_earth'] = distances.flatten()
+most_similar = cluster0.sort_values('distance_from_earth').head(10)
+print(most_similar[['pl_name', 'distance_from_earth'] + features])
+most_similar.to_csv('most_similar.csv', index=False)
+print("CSV file has been saved successfully")
