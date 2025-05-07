@@ -9,4 +9,18 @@ If you notice any issues or have any suggestions, feel free to share your advice
 EDIT 1:
 In the **First draft** file, the selected features include planet radius, planet mass, stellar mass, effective temperature, and distance. The features I focused on are the Earth reference units, specifically planet radius and planet mass. However, the output data from this version does not provide the clear analysis I had initially expected. This may include incorporating other factors like orbital period and stellar temperature to gain a more comprehensive understanding of the data.
 
-*Work in progress..*
+EDIR 2:
+In the second version of this project, I revised the clustering approach by applying a **Gaussian Mixture Model (GMM)** instead of the previous K-Means method. This change allows for more flexible cluster boundaries and can better capture the underlying structure of the data.
+The following features were used to represent each exoplanet:
+- `pl_rade` – Planetary Radius  
+- `pl_bmasse` – Planetary Mass  
+- `st_mass` – Stellar Mass  
+- `pl_orbper` – Orbital Period  
+- `sy_dist` – System Distance from Earth  
+- `st_teff` – Stellar Effective Temperature
+- 
+After applying GMM, **Earth was found in Cluster 0**, indicating that the planets in this cluster exhibit similar physical and orbital characteristics. I then scaled the feature data and ranked the top 10 planets in Cluster 0 based on similarity to Earth.
+
+The planet **LP 791-18 d** was identified as the **most similar to Earth**.
+
+📄 For the full unofficial report and clustering dataset, see the Google Docs link in the project description.
