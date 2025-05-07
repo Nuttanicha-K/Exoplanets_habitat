@@ -1,2 +1,20 @@
 ##WORK IN PROGRESS
 ##WILL PUSH UP WIHIN THE DAY I WANT
+# %%
+#2nd version
+import pandas as pd
+import matplotlib.pyplot as plt
+from sklearn.preprocessing import StandardScaler
+from sklearn.decomposition import PCA
+from sklearn.mixture import GaussianMixture
+import numpy as np
+
+df = pd.read_csv('clustered_exoplanets6.csv')
+df = df.dropna(subset=['pl_rade', 'pl_bmasse', 'st_teff', 'sy_dist', 'st_mass',])
+features = df[['pl_rade', 'pl_bmasse', 'st_mass', 'sy_dist', 'st_teff',]]
+
+scaler = StandardScaler()
+scaled_features = scaler.fit_transform(features)
+
+pca = PCA(n_components=2)
+pca_features = pca.fit_transform(scaled_features)
