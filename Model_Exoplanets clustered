@@ -114,3 +114,6 @@ most_similar = cluster0.sort_values('distance_from_earth').head(10)
 print(most_similar[['pl_name', 'distance_from_earth'] + features])
 most_similar.to_csv('most_similar.csv', index=False)
 print("CSV file has been saved successfully")
+
+#%%
+#NEXT STEP IS ANALYZING WHICH CLUSTERED TELLS WHAT KA
