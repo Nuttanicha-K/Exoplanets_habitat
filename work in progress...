@@ -1,5 +1,3 @@
-##WORK IN PROGRESS
-##WILL PUSH UP WIHIN THE DAY I WANT
 # %%
 #2nd version
 import pandas as pd
@@ -64,3 +62,22 @@ all_cluster_data = pd.concat(cluster_data_list, ignore_index=True)
 all_cluster_data.to_csv('clustered_exoplanets.csv', index=False)
 
 print("CSV file has been saved successfully")
+
+features = ['pl_rade', 'pl_bmasse', 'st_mass', 'sy_dist', 'st_teff']
+
+for feature in features:
+    pivot_data = df.groupby('cluster')[[feature]].mean()
+
+
+    plt.figure(figsize=(8, 6))
+    plt.imshow(pivot_data.T, cmap='coolwarm', aspect='auto')
+
+    plt.colorbar(label='Mean Value')
+    plt.xticks(np.arange(len(pivot_data)), pivot_data.index, rotation=90)
+    plt.yticks(np.arange(len(pivot_data.columns)), pivot_data.columns)
+
+    plt.xlabel('Cluster')
+    plt.ylabel(feature)
+    plt.title(f'Cluster vs Feature: {feature}', fontsize=14)
+    plt.tight_layout()
+    plt.show()
