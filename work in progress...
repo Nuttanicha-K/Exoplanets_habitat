@@ -18,3 +18,49 @@ scaled_features = scaler.fit_transform(features)
 
 pca = PCA(n_components=2)
 pca_features = pca.fit_transform(scaled_features)
+
+#%%
+k = 6
+gmm = GaussianMixture(n_components=k, random_state=42)
+df['cluster'] = gmm.fit_predict(scaled_features)
+
+df['PCA1'] = pca_features[:, 0]
+df['PCA2'] = pca_features[:, 1]
+
+
+plt.figure(figsize=(10, 6))
+plt.scatter(df['PCA1'], df['PCA2'], c=df['cluster'], cmap='plasma', alpha=0.7)
+plt.title(f'GMM Clustering of Exoplanets (k={k}, PCA Projection)')
+plt.xlabel('PCA 1')
+plt.ylabel('PCA 2')
+plt.colorbar(label='Cluster')
+plt.grid(True)
+plt.show()
+
+
+probs = gmm.predict_proba(scaled_features)
+print("\nSample Cluster Probabilities (first 5 rows):")
+print(pd.DataFrame(probs).head())
+
+
+for i in range(k):
+    print(f"\nCluster {i} Summary:")
+    print(df[df['cluster'] == i].describe())
+
+
+for cluster in df['cluster'].unique():
+    print(f"\nCluster {cluster} Details:")
+    cluster_data = df[df['cluster'] == cluster]
+    print(cluster_data[['pl_name', 'pl_rade', 'pl_bmasse', 'st_mass', 'sy_dist', 'st_teff']])
+
+# %%
+cluster_data_list = []
+for cluster in df['cluster'].unique():
+    cluster_data = df[df['cluster'] == cluster][['pl_name', 'pl_rade', 'pl_bmasse', 'st_mass', 'sy_dist', 'st_teff']]
+    cluster_data['cluster'] = cluster
+    cluster_data_list.append(cluster_data)
+
+all_cluster_data = pd.concat(cluster_data_list, ignore_index=True)
+all_cluster_data.to_csv('clustered_exoplanets.csv', index=False)
+
+print("CSV file has been saved successfully")
