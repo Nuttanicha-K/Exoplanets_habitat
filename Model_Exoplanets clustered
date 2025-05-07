@@ -1,5 +1,13 @@
 #%%
 import pandas as pd
+import matplotlib.pyplot as plt
+from sklearn.preprocessing import StandardScaler
+from sklearn.decomposition import PCA
+from sklearn.mixture import GaussianMixture
+from sklearn.metrics import pairwise_distances
+import numpy as np
+
+#%%
 df = pd.read_csv('EXO_PLANET_DATA_FROM_NASA.csv')
 df['releasedate'] = pd.to_datetime(df['releasedate'], format='%m/%d/%y', errors='coerce')
 invalid_dates = df[df['releasedate'].isna()]
@@ -9,3 +17,100 @@ df_sorted = df.sort_values(by='releasedate')
 df_latest = df_sorted.drop_duplicates(subset='pl_name', keep='last')
 
 df_latest.to_csv('filtered_exoplanets.csv', index=False)
+#%%
+df = pd.read_csv('clustered_exoplanets6.csv')
+df = df.dropna(subset=['pl_rade', 'pl_bmasse', 'st_teff', 'sy_dist', 'st_mass',])
+features = df[['pl_rade', 'pl_bmasse', 'st_mass', 'sy_dist', 'st_teff',]]
+
+scaler = StandardScaler()
+scaled_features = scaler.fit_transform(features)
+
+pca = PCA(n_components=2)
+pca_features = pca.fit_transform(scaled_features)
+
+#%%
+k = 6
+gmm = GaussianMixture(n_components=k, random_state=42)
+df['cluster'] = gmm.fit_predict(scaled_features)
+
+df['PCA1'] = pca_features[:, 0]
+df['PCA2'] = pca_features[:, 1]
+
+
+plt.figure(figsize=(10, 6))
+plt.scatter(df['PCA1'], df['PCA2'], c=df['cluster'], cmap='plasma', alpha=0.7)
+plt.title(f'GMM Clustering of Exoplanets (k={k}, PCA Projection)')
+plt.xlabel('PCA 1')
+plt.ylabel('PCA 2')
+plt.colorbar(label='Cluster')
+plt.grid(True)
+plt.show()
+
+
+probs = gmm.predict_proba(scaled_features)
+print("\nSample Cluster Probabilities (first 5 rows):")
+print(pd.DataFrame(probs).head())
+
+
+for i in range(k):
+    print(f"\nCluster {i} Summary:")
+    print(df[df['cluster'] == i].describe())
+
+
+for cluster in df['cluster'].unique():
+    print(f"\nCluster {cluster} Details:")
+    cluster_data = df[df['cluster'] == cluster]
+    print(cluster_data[['pl_name', 'pl_rade', 'pl_bmasse', 'st_mass', 'sy_dist', 'st_teff']])
+
+# %%
+cluster_data_list = []
+for cluster in df['cluster'].unique():
+    cluster_data = df[df['cluster'] == cluster][['pl_name', 'pl_rade', 'pl_bmasse', 'st_mass', 'sy_dist', 'st_teff']]
+    cluster_data['cluster'] = cluster
+    cluster_data_list.append(cluster_data)
+
+all_cluster_data = pd.concat(cluster_data_list, ignore_index=True)
+all_cluster_data.to_csv('clustered_exoplanets.csv', index=False)
+
+print("CSV file has been saved successfully")
+
+features = ['pl_rade', 'pl_bmasse', 'st_mass', 'sy_dist', 'st_teff']
+
+for feature in features:
+    pivot_data = df.groupby('cluster')[[feature]].mean()
+
+
+    plt.figure(figsize=(8, 6))
+    plt.imshow(pivot_data.T, cmap='coolwarm', aspect='auto')
+
+    plt.colorbar(label='Mean Value')
+    plt.xticks(np.arange(len(pivot_data)), pivot_data.index, rotation=90)
+    plt.yticks(np.arange(len(pivot_data.columns)), pivot_data.columns)
+
+    plt.xlabel('Cluster')
+    plt.ylabel(feature)
+    plt.title(f'Cluster vs Feature: {feature}', fontsize=14)
+    plt.tight_layout()
+    plt.show()
+
+features = ['pl_rade', 'pl_bmasse', 'st_mass', 'sy_dist', 'st_teff']
+
+cluster0 = df[df['cluster'] == 0]
+
+earth_data = pd.DataFrame([{
+    'pl_rade': 1.0,      
+    'pl_bmasse': 1.0,    
+    'st_mass': 1.0,      
+    'sy_dist': 0.0, 
+    'st_teff': 5778, 
+}])
+
+
+earth_scaled = scaler.transform(earth_data[features])
+distances = pairwise_distances(cluster0[features], earth_scaled)
+cluster0 = cluster0.copy()
+cluster0['distance_from_earth'] = distances.flatten()
+most_similar = cluster0.sort_values('distance_from_earth').head(10)
+print(most_similar[['pl_name', 'distance_from_earth'] + features])
+most_similar.to_csv('most_similar.csv', index=False)
+print("CSV file has been saved successfully")
